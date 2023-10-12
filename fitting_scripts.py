@@ -78,6 +78,8 @@ def plot_fitting_points(
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
 
+    # ec
+    ec = plt.rcParams['axes.labelcolor']
     # caclulate residual
     if model:
         Y2 = np.array(
@@ -123,8 +125,8 @@ def plot_fitting_points(
                 marker=m_,
                 markersize=5,
                 elinewidth=1,
-                ecolor="k",
-                markeredgecolor="k",
+                ecolor=ec,
+                markeredgecolor=ec,
                 ls="",
                 zorder=10,
             )
@@ -137,7 +139,7 @@ def plot_fitting_points(
                     model_dset.interp({cf: cval}),
                     color=cmap(norm(cval)),
                     lw=1,
-                    alpha=0.5,
+                    # alpha=0.5,
                 )
 
         # add y label
@@ -147,7 +149,7 @@ def plot_fitting_points(
 
         # add legend
         if legend:
-            pkwargs = dict(ls="", marker="o", markeredgecolor="k")
+            pkwargs = dict(ls="", marker="o", markeredgecolor=ec)
 
             from matplotlib.lines import Line2D
 
@@ -224,6 +226,8 @@ def get_model(
     """calculate a model using the fitting results
     """
     Z = np.logspace(Zmin, Zmax, nZ)
+    if nZ == 3:
+        Z = np.array([0.1, 0.3, 1])
     W = np.logspace(Wmin, Wmax, nW)
 
     model = (
