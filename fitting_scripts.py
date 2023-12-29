@@ -337,7 +337,7 @@ def plot_fitting_mean(
 
         # add y label
         if yf in labels:
-            plt.ylabel(labels[yf])
+            plt.ylabel(r"$\log\,$"+labels[yf])
 
         # add legend
         if legend:
@@ -378,7 +378,7 @@ def plot_fitting_mean(
             plt.sca(ax)
     # add x label
     if xf in labels:
-        plt.xlabel(labels[xf])
+        plt.xlabel(r"$\log\,$"+labels[xf])
 
 def scifmt(value, fmt=":9.2e"):
     """format the number into string with scientific format
@@ -510,6 +510,7 @@ def set_labels():
     for k, v in Plabels.items():
         labels[k] = v + Punit_label
     labels["PDE_2p_avg_approx"] = labels["PDE"]
+    labels["PDE_2p_avg_approx_sp"] = labels["PDE"]
     labels["Ptot_hot"] = r"$P_{\rm tot,hot}$" + Punit_label
     for k, v in Ulabels.items():
         newk = k.replace("Pi", "Y").replace("P", "Y")
