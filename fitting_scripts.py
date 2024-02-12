@@ -516,19 +516,19 @@ def set_labels():
         newk = k.replace("Pi", "Y").replace("P", "Y")
         labels[newk] = v + v_unit_label
     labels["Ynonth"] = r"$\Upsilon_{\rm turb+mag}$" + v_unit_label
-    labels["Zgas"] = r"$Z_{\rm gas}^\prime$"
-    labels["Zdust"] = r"$Z_{\rm dust}^\prime$"
+    labels["Zgas"] = r"$Z_{\rm g}^\prime$"
+    labels["Zdust"] = r"$Z_{\rm d}^\prime$"
 
     labels["sfr"] = r"$\Sigma_{\rm SFR}$" + sfr_unit_label
     labels["sfr10"] = labels["sfr40"] = labels["sfr100"] = labels["sfr"]
     labels["tdep40"] = r"$t_{\rm dep}\,[{\rm Myr}]$"
     labels["tdep"] = r"$t_{\rm dep}\,[{\rm Myr}]$"
-    labels["nH"] = r"$n_{\rm H}\,[{\rm cm^{-3}}]$"
+    labels["nH"] = r"$n_{\rm H,mid}\,[{\rm cm^{-3}}]$"
     labels["rhotot"] = r"$\rho_{\rm tot}\,[{M_\odot\,{\rm pc^{-3}}}]$"
-    labels["sigma_eff"] = r"$\sigma_{\rm eff}$" + v_unit_label
-    labels["sigma_eff_mid"] = r"$\sigma_{\rm eff,mid}$" + v_unit_label
-    labels["sigma_turb"] = r"$\sigma_{\rm turb}$" + v_unit_label
-    labels["sigma_turb_mid"] = r"$\sigma_{\rm turb,mid}$" + v_unit_label
+    labels["sigma_eff"] = r"$\sigma_{\rm z,eff}$" + v_unit_label
+    labels["sigma_eff_mid"] = r"$\sigma_{\rm z,eff,mid}$" + v_unit_label
+    labels["sigma_turb"] = r"$\sigma_{\rm z,turb}$" + v_unit_label
+    labels["sigma_turb_mid"] = r"$\sigma_{\rm z,turb,mid}$" + v_unit_label
     labels["sigma_th"] = r"$\sigma_{\rm th}$" + v_unit_label
     labels["sigma_th_mid"] = r"$\sigma_{\rm th,mid}$" + v_unit_label
     labels["Sigma_gas"] = r"$\Sigma_{\rm gas}\,[M_\odot\,{\rm pc^{-2}}]$"
