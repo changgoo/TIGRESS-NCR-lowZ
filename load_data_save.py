@@ -4,9 +4,9 @@ import xarray as xr
 import pandas as pd
 import numpy as np
 
+
 def load_data_and_save():
-    """script to load simulation data and get information relevant for fitting
-    """
+    """script to load simulation data and get information relevant for fitting"""
     from pyathena.tigress_ncr.ncr_paper_lowz import LowZData
 
     pdata = LowZData()
@@ -59,6 +59,7 @@ def load_data_and_save():
     if os.path.isfile(outfile):
         os.remove(outfile)
     qdset.to_netcdf(outfile)
+
 
 if __name__ == "__main__":
     narg = len(sys.argv)

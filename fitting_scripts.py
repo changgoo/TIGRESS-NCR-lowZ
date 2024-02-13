@@ -4,9 +4,11 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+
 # import pandas as pd
 # import sys, os
 import cmasher as cmr
+
 
 def add_panel_labels(axes, label0="a"):
     for i, ax in enumerate(axes):
@@ -81,7 +83,7 @@ def plot_fitting_points(
     sm.set_array([])
 
     # ec
-    ec = plt.rcParams['axes.labelcolor']
+    ec = plt.rcParams["axes.labelcolor"]
     # caclulate residual
     if model:
         Y2 = np.array(
@@ -95,9 +97,9 @@ def plot_fitting_points(
         res = df[yf] / df[xf] - 1
 
     # use percentiles for errorbar
-    qlow = dset.sel(q='16').to_dataset(dim="variable").to_dataframe()
-    qmid = dset.sel(q='50').to_dataset(dim="variable").to_dataframe()
-    qhigh = dset.sel(q='84').to_dataset(dim="variable").to_dataframe()
+    qlow = dset.sel(q="16").to_dataset(dim="variable").to_dataframe()
+    qmid = dset.sel(q="50").to_dataset(dim="variable").to_dataframe()
+    qhigh = dset.sel(q="84").to_dataset(dim="variable").to_dataframe()
     qx = np.array([qlow[xf], qmid[xf], qhigh[xf]])
     qy = np.array([qlow[yf], qmid[yf], qhigh[yf]])
 
@@ -243,50 +245,47 @@ def plot_fitting_mean(
 
     # get the median values of the simulation results
     # and assign color given coloarbar normalization set by the model range
-    x1 = np.log10(dset.sel(variable=xf,q='mean'))
-    x1std = dset.sel(variable=xf,q='std')/dset.sel(variable=xf,q='mean')/np.log(10)
-    x2 = np.log10(dset.sel(variable=cf,q='mean'))
-    x2std = dset.sel(variable=cf,q='std')/dset.sel(variable=cf,q='mean')/np.log(10)
-    y = np.log10(dset.sel(variable=yf,q='mean'))
-    ystd = dset.sel(variable=yf,q='std')/dset.sel(variable=yf,q='mean')/np.log(10)
+    x1 = np.log10(dset.sel(variable=xf, q="mean"))
+    x1std = (
+        dset.sel(variable=xf, q="std") / dset.sel(variable=xf, q="mean") / np.log(10)
+    )
+    x2 = np.log10(dset.sel(variable=cf, q="mean"))
+    x2std = (
+        dset.sel(variable=cf, q="std") / dset.sel(variable=cf, q="mean") / np.log(10)
+    )
+    y = np.log10(dset.sel(variable=yf, q="mean"))
+    ystd = dset.sel(variable=yf, q="std") / dset.sel(variable=yf, q="mean") / np.log(10)
 
     c = cmap(norm(x2.data))
     marker = []
-    for name in list(dset['name'].data):
-        if 'Zd0.025' in name:
-            marker.append('s')
-        elif 'Om01' in name:
-            marker.append('v')
-        elif 'Om02' in name:
-            marker.append('^')
-        elif 'b10' in name and 'S05' not in name:
-            marker.append('*')
+    for name in list(dset["name"].data):
+        if "Zd0.025" in name:
+            marker.append("s")
+        elif "Om01" in name:
+            marker.append("v")
+        elif "Om02" in name:
+            marker.append("^")
+        elif "b10" in name and "S05" not in name:
+            marker.append("*")
         else:
-            marker.append('o')
-
+            marker.append("o")
 
     if cf == "Zgas":
-        sm = plt.cm.ScalarMappable(
-            cmap=cmap, norm=Normalize(cmin, cmax)
-        )
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize(cmin, cmax))
     else:
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
 
     # ec
-    ec = plt.rcParams['axes.labelcolor']
+    ec = plt.rcParams["axes.labelcolor"]
     # caclulate residual
     if model:
         Y2 = np.array(
-            [
-                model_dset.interp({xf1: x1v, xf2: x2v}).data
-                for x1v, x2v in zip(x1,x2)
-            ]
+            [model_dset.interp({xf1: x1v, xf2: x2v}).data for x1v, x2v in zip(x1, x2)]
         )
         res = 10**Y2 / 10**y - 1
     else:
-        res = 10**y/10**x1 - 1
-
+        res = 10**y / 10**x1 - 1
 
     if residual:
         # residual plot
@@ -337,14 +336,14 @@ def plot_fitting_mean(
 
         # add y label
         if yf in labels:
-            plt.ylabel(r"$\log\,$"+labels[yf])
+            plt.ylabel(r"$\log\,$" + labels[yf])
 
         # add legend
         if legend:
             pkwargs = dict(ls="", marker="o", markeredgecolor=ec)
 
             Zmodels = sorted(np.unique(x2))
-            Zlabels = [f"{Z:.1f}" for Z in 10.**np.array(Zmodels)]
+            Zlabels = [f"{Z:.1f}" for Z in 10.0 ** np.array(Zmodels)]
             colors = cmap(norm(Zmodels))
             custom_lines = []
             for c in colors:
@@ -378,11 +377,11 @@ def plot_fitting_mean(
             plt.sca(ax)
     # add x label
     if xf in labels:
-        plt.xlabel(r"$\log\,$"+labels[xf])
+        plt.xlabel(r"$\log\,$" + labels[xf])
+
 
 def scifmt(value, fmt=":9.2e"):
-    """format the number into string with scientific format
-    """
+    """format the number into string with scientific format"""
     maxdigits = int(fmt.split(".")[1][0]) + 1
     sp = "{{{}}}".format(fmt).format(value).split("e")
     digits = int(sp[1])
@@ -391,9 +390,9 @@ def scifmt(value, fmt=":9.2e"):
     else:
         return sp[0] + "\\cdot 10^{{{}}}".format(int(sp[1]))
 
+
 def regress(df, x1="W", x2="Zgas", yf="Ytot", **fit_kwargs):
-    """bi-variate power-law fitting using linear regression
-    """
+    """bi-variate power-law fitting using linear regression"""
     from sklearn import linear_model
 
     # import statsmodels.api as sm
@@ -408,41 +407,44 @@ def regress(df, x1="W", x2="Zgas", yf="Ytot", **fit_kwargs):
     # print("Coefficients: \n", regr.coef_)
     return regr
 
-def fit_odr(dset, xf1="W", xf2="Zgas", yf="Ytot", std=False,
-             **fit_kwargs):
-    """bi-variate power-law fitting using orthogonal distance regression
-    """
+
+def fit_odr(dset, xf1="W", xf2="Zgas", yf="Ytot", std=False, **fit_kwargs):
+    """bi-variate power-law fitting using orthogonal distance regression"""
     from scipy import odr
+
     def _lin_fcn(B, x):
         a, b = B[0], B[1:]
         b.shape = (b.shape[0], 1)
 
-        return a + (x*b).sum(axis=0)
+        return a + (x * b).sum(axis=0)
 
-    x1 = np.log10(dset.sel(variable=xf1,q='mean'))
-    x1std = dset.sel(variable=xf1,q='std')/dset.sel(variable=xf1,q='mean')/np.log(10)
-    x2 = np.log10(dset.sel(variable=xf2,q='mean'))
-    x2std = dset.sel(variable=xf2,q='std')/dset.sel(variable=xf2,q='mean')/np.log(10)
-    y = np.log10(dset.sel(variable=yf,q='mean'))
-    ystd = dset.sel(variable=yf,q='std')/dset.sel(variable=yf,q='mean')/np.log(10)
+    x1 = np.log10(dset.sel(variable=xf1, q="mean"))
+    x1std = (
+        dset.sel(variable=xf1, q="std") / dset.sel(variable=xf1, q="mean") / np.log(10)
+    )
+    x2 = np.log10(dset.sel(variable=xf2, q="mean"))
+    x2std = (
+        dset.sel(variable=xf2, q="std") / dset.sel(variable=xf2, q="mean") / np.log(10)
+    )
+    y = np.log10(dset.sel(variable=yf, q="mean"))
+    ystd = dset.sel(variable=yf, q="std") / dset.sel(variable=yf, q="mean") / np.log(10)
 
     model = odr.Model(_lin_fcn)
     if std:
-        data = odr.RealData([x1,x2],y
-                            ,sx=[x1std,np.ones_like(x2std)],sy=ystd)
+        data = odr.RealData([x1, x2], y, sx=[x1std, np.ones_like(x2std)], sy=ystd)
     else:
-        data = odr.RealData([x1,x2],y)
-    myodr = odr.ODR(data, model, beta0=[0,1,0])
+        data = odr.RealData([x1, x2], y)
+    myodr = odr.ODR(data, model, beta0=[0, 1, 0])
     myoutput = myodr.run()
     myoutput.pprint()
 
     return myoutput
 
+
 def get_model(
     regr, Wmin=2.5, Wmax=6.5, Zmin=-1.5, Zmax=0.5, nW=100, nZ=100, dims=["Zgas", "W"]
 ):
-    """calculate a model using the fitting results
-    """
+    """calculate a model using the fitting results"""
     Z = np.logspace(Zmin, Zmax, nZ)
     if nZ == 3:
         Z = np.array([0.1, 0.3, 1])
@@ -458,11 +460,11 @@ def get_model(
 
     return model_dset
 
+
 def get_model_odr(
     odr_out, Wmin=2.5, Wmax=6.5, Zmin=-1.5, Zmax=0.5, nW=100, nZ=100, dims=["Zgas", "W"]
 ):
-    """calculate a model using the fitting results
-    """
+    """calculate a model using the fitting results"""
     Z = np.linspace(Zmin, Zmax, nZ)
     if nZ == 3:
         Z = np.array([0.1, 0.3, 1])
@@ -478,9 +480,9 @@ def get_model_odr(
 
     return model_dset
 
+
 def set_labels():
-    """set up labels to be used in plots
-    """
+    """set up labels to be used in plots"""
     Punit_label = r"$/k_B\,[{\rm cm^{-3}\,K}]$"
     sfr_unit_label = r"$\,[M_\odot{\rm \,kpc^{-2}\,yr}]$"
     v_unit_label = r"$\,[{\rm km/s}]$"
@@ -535,6 +537,7 @@ def set_labels():
     labels["H"] = r"$H_{\rm gas}\,[{\rm pc}]$"
 
     return labels
+
 
 # set labels as a global variable
 labels = set_labels()
