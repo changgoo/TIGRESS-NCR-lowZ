@@ -1,6 +1,8 @@
-import sys,os
+import sys
+import os
 import xarray as xr
 import pandas as pd
+import numpy as np
 
 def load_data_and_save():
     """script to load simulation data and get information relevant for fitting

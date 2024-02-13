@@ -4,8 +4,8 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-import pandas as pd
-import sys, os
+# import pandas as pd
+# import sys, os
 import cmasher as cmr
 
 def add_panel_labels(axes, label0="a"):
@@ -259,7 +259,7 @@ def plot_fitting_mean(
             marker.append('v')
         elif 'Om02' in name:
             marker.append('^')
-        elif 'b10' in name and not 'S05' in name:
+        elif 'b10' in name and 'S05' not in name:
             marker.append('*')
         else:
             marker.append('o')
