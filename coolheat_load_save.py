@@ -20,9 +20,20 @@ def load_hst(pdata, m):
     area = s.domain["Lx"][0] * s.domain["Lx"][1]
 
     h = read_hst(s.files["hst"])
+
+    # time fields
     tMyr = h["time"] * s.u.Myr
     h["tMyr"] = h["time"] * s.u.Myr
-    # energy gain/loss
+
+    # setting time array in code units
+    trange = pdata.get_trange(s)
+    tstr = max(trange.start / s.u.Myr, h["time"].min())
+    tend = min(trange.stop / s.u.Myr, h["time"].max())
+    dt = s.par["output5"]["dt"] * 0.5
+    tarr = np.arange(tstr, tend, dt)
+    tarr_c = 0.5 * (tarr[1:] + tarr[:-1])
+
+    # set radiation fields
     ifreq = dict()
     for f in ("PH", "LW", "PE"):  # ,'PE_unatt'):
         try:
@@ -56,21 +67,12 @@ def load_hst(pdata, m):
     SLW = h["Ltot_LW"] / area
     Srad = SLyC + SPE + SLW
 
-    # injected SN energy
-    sn = read_hst(s.files["sn"])
-    Nsn, tbin = np.histogram(sn["time"] * s.u.Myr, bins=tMyr)
-    dt = np.diff(tbin)
-    SSN = np.concatenate(
-        [[0], (1.0e51 * au.erg / au.Myr).to("Lsun").value * Nsn / dt / area]
-    )
-    SSN = pd.Series(SSN, h.index)
-
     # add energetics fields
     h["SLyC"] = SLyC
     h["SPE"] = SPE
     h["SLW"] = SLW
     h["Srad"] = Srad
-    h["SSN"] = SSN
+
     # absorption fraction
     for f, f2 in zip(("PH", "PE", "LW"), ("LyC", "PE", "LW")):
         if f"Labs_{f}" in h:
@@ -80,6 +82,12 @@ def load_hst(pdata, m):
         if f"Lgas_{f}" in h:
             h[f"Sabs_gas_{f2}"] = h[f"Lgas_{f}"] / area
 
+    # injected SN energy
+    sn = read_hst(s.files["sn"])
+    Nsn, tbin = np.histogram(sn["time"], bins= tarr)
+    SSN = (1.0e51 * au.erg / au.Myr).to("Lsun").value * Nsn / (dt*s.u.Myr) / area
+
+    # define field header
     band = ["LyC", "LW", "PE"]
     flist = [
         "time",
@@ -91,7 +99,7 @@ def load_hst(pdata, m):
         # "Sheat",
         # "Scool",
         # "Snet",
-        "SSN",
+        # "SSN",
         # "SKE",
         "sfr10",
         "sfr40",
@@ -103,18 +111,12 @@ def load_hst(pdata, m):
             if fname in h:
                 flist.append(fname)
 
-    # setting time array in code units
-    trange = pdata.get_trange(s)
-    tstr = max(trange.start / s.u.Myr, h["time"].min())
-    tend = min(trange.stop / s.u.Myr, h["time"].max())
-    dt = s.par["output5"]["dt"] * 0.5
-    tarr = np.arange(tstr, tend, dt)
-    tarr_c = 0.5 * (tarr[1:] + tarr[:-1])
-
     # store data from history
     hdict = dict()
     for f in flist:
         hdict[f] = np.interp(tarr_c, h["time"], h[f])
+    # add SN rate separately
+    hdict["SSN"] = SSN
 
     # store data from cumulative history
     hw = s.read_hst_phase(iph=0)
@@ -142,7 +144,7 @@ def load_hst(pdata, m):
 
     hst_cum["Wrad"] = hw["Wrad_dt"] * Lz
 
-    hst_cum["Esink"] = hw["sink_E_dt"] * dvol / vol
+    hst_cum["Esink"] = -hw["sink_E_dt"] * dvol / vol
     for k in hst_cum:
         hcum = hst_cum[k]  # .cumsum(dim="time")
         hcum_i = np.interp(tarr, hw["time"], hcum)
