@@ -87,7 +87,7 @@ def load_hst(pdata, m):
         "Srad",
         "SLyC",
         "SPE",
-        "SLW"
+        "SLW",
         # "Sheat",
         # "Scool",
         # "Snet",
