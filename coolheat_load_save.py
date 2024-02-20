@@ -5,7 +5,7 @@ import shutil
 import gc
 import astropy.constants as ac
 import astropy.units as au
-import pandas as pd
+# import pandas as pd
 
 from pyathena.io.read_hst import read_hst
 from pyathena.tigress_ncr.zprof import zprof_rename
@@ -84,8 +84,11 @@ def load_hst(pdata, m):
 
     # injected SN energy
     sn = read_hst(s.files["sn"])
-    Nsn, tbin = np.histogram(sn["time"], bins= tarr)
-    SSN = (1.0e51 * au.erg / au.Myr).to("Lsun").value * Nsn / (dt*s.u.Myr) / area
+    snenergy = sn["d_E"] * dvol * s.u.energy
+    Esn, tbin = np.histogram(sn["time"], bins=tarr, weights=snenergy)
+    Nsn, tbin = np.histogram(sn["time"], bins=tarr)
+    SSNinj = (1.0e51 * au.erg / au.Myr).to("Lsun").value * Nsn / (dt * s.u.Myr) / area
+    SSN = (1.0 * au.erg / au.Myr).to("Lsun").value * Esn / (dt * s.u.Myr) / area
 
     # define field header
     band = ["LyC", "LW", "PE"]
@@ -118,6 +121,7 @@ def load_hst(pdata, m):
         hdict[f] = np.interp(tarr_c, h["time"], h[f])
     # add SN rate separately
     hdict["SSN"] = SSN
+    hdict["SSNinj"] = SSNinj
 
     # store data from cumulative history
     hw = s.read_hst_phase(iph=0)
