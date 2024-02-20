@@ -3,7 +3,11 @@ import xarray as xr
 import numpy as np
 import shutil
 import gc
+import astropy.constants as ac
+import astropy.units as au
+import pandas as pd
 
+from pyathena.io.read_hst import read_hst
 from pyathena.tigress_ncr.zprof import zprof_rename
 from pyathena.tigress_ncr.ncr_paper_lowz import LowZData
 
@@ -11,21 +15,84 @@ from pyathena.tigress_ncr.ncr_paper_lowz import LowZData
 def load_hst(pdata, m):
     s = pdata.sa.set_model(m)
     Lz = s.domain["Lx"][2]
-    vol = np.prod(s.domain['Lx'])
+    dvol = np.prod(s.domain["dx"])
+    vol = np.prod(s.domain["Lx"])
     area = s.domain["Lx"][0] * s.domain["Lx"][1]
 
-    h = pdata.set_global_history(m, recal=False)
+    h = read_hst(s.files["hst"])
+    tMyr = h["time"] * s.u.Myr
+    h["tMyr"] = h["time"] * s.u.Myr
+    # energy gain/loss
+    ifreq = dict()
+    for f in ("PH", "LW", "PE"):  # ,'PE_unatt'):
+        try:
+            ifreq[f] = s.par["radps"]["ifreq_{0:s}".format(f)]
+        except KeyError:
+            pass
+    for i in range(s.par["radps"]["nfreq"]):
+        for k, v in ifreq.items():
+            if i == v:
+                factor = s.u.Lsun if s.test_phase_sep_hst() else vol * s.u.Lsun
+                h[f"Ltot_{k}"] = h[f"Ltot{i}"] * factor
+                try:
+                    h[f"Ldust_{k}"] = h[f"Ldust{i}"] * factor
+                    h[f"Labs_{k}"] = h[f"Ldust{i}"] * factor
+                    if k == "PH":
+                        hnu_LyC = (s.par["radps"]["hnu_PH"] * au.eV).cgs.value
+                        Lsun_cgs = (1.0 * ac.L_sun).cgs.value
+                        h["Lgas_PH"] = (
+                            (h["phot_rate_H2"] + h["phot_rate_HI"])
+                            * hnu_LyC
+                            / s.u.Lsun
+                            / Lsun_cgs
+                            * factor
+                        )
+                        h["Labs_PH"] += h["Lgas_PH"]
+                except KeyError:
+                    print(f"no photon diagnostics for {k}")
+    # injected radiation
+    SLyC = h["Ltot_PH"] / area
+    SPE = h["Ltot_PE"] / area
+    SLW = h["Ltot_LW"] / area
+    Srad = SLyC + SPE + SLW
+
+    # injected SN energy
+    sn = read_hst(s.files["sn"])
+    Nsn, tbin = np.histogram(sn["time"] * s.u.Myr, bins=tMyr)
+    dt = np.diff(tbin)
+    SSN = np.concatenate(
+        [[0], (1.0e51 * au.erg / au.Myr).to("Lsun").value * Nsn / dt / area]
+    )
+    SSN = pd.Series(SSN, h.index)
+
+    # add energetics fields
+    h["SLyC"] = SLyC
+    h["SPE"] = SPE
+    h["SLW"] = SLW
+    h["Srad"] = Srad
+    h["SSN"] = SSN
+    # absorption fraction
+    for f, f2 in zip(("PH", "PE", "LW"), ("LyC", "PE", "LW")):
+        if f"Labs_{f}" in h:
+            h[f"Sabs_{f2}"] = h[f"Labs_{f}"] / area
+        if f"Ldust_{f}" in h:
+            h[f"Sabs_dust_{f2}"] = h[f"Ldust_{f}"] / area
+        if f"Lgas_{f}" in h:
+            h[f"Sabs_gas_{f2}"] = h[f"Lgas_{f}"] / area
 
     band = ["LyC", "LW", "PE"]
     flist = [
         "time",
         "tMyr",
         "Srad",
-        "Sheat",
-        "Scool",
-        "Snet",
+        "SLyC",
+        "SPE",
+        "SLW"
+        # "Sheat",
+        # "Scool",
+        # "Snet",
         "SSN",
-        "SKE",
+        # "SKE",
         "sfr10",
         "sfr40",
         "sfr100",
@@ -40,7 +107,7 @@ def load_hst(pdata, m):
     trange = pdata.get_trange(s)
     tstr = max(trange.start / s.u.Myr, h["time"].min())
     tend = min(trange.stop / s.u.Myr, h["time"].max())
-    dt = s.par["output5"]["dt"]*0.5
+    dt = s.par["output5"]["dt"] * 0.5
     tarr = np.arange(tstr, tend, dt)
     tarr_c = 0.5 * (tarr[1:] + tarr[:-1])
 
@@ -51,6 +118,16 @@ def load_hst(pdata, m):
 
     # store data from cumulative history
     hw = s.read_hst_phase(iph=0)
+
+    # H, vz, tver
+    H = np.sqrt(hw["H2"] / hw["mass"])
+    vz = np.sqrt((2.0 * h["x3KE"]) / h["mass"])
+    tver = np.interp(tarr_c, hw["time"], H) / np.interp(tarr_c, h["time"], vz) * s.u.Myr
+
+    # turbulence dissipation rate
+    KE = np.interp(tarr_c, h["time"], h["x1KE"] + h["x2KE"] + h["x3KE"])
+    hdict["SKE"] = KE / tver * vol / area * (s.u.energy / s.u.time).to("Lsun")
+
     hst_cum = dict()
     hst_cum["Fout"] = hw["Fze_upper_dt"] - hw["Fze_lower_dt"]
     hst_cum["Rxy"] = hw["Rxy_L_dt"] * Lz
@@ -58,15 +135,20 @@ def load_hst(pdata, m):
     hst_cum["Gext"] = hw["Ephi_ext_dt"] * Lz
     hst_cum["Gsg"] = hw["Ephi_sg_dt"] * Lz
     hst_cum["Gtid"] = hw["Ephi_tidal_dt"] * Lz
-    hst_cum["Esink"] = hw["sink_E_dt"] * Lz
-    hst_cum["cool"] = hw["coolrate_dt"] * Lz
-    hst_cum["heat"] = hw["heatrate_dt"] * Lz
-    hst_cum["net"] = hw["netcool_dt"] * Lz
 
+    hst_cum["Scool"] = hw["coolrate_dt"] * Lz
+    hst_cum["Sheat"] = hw["heatrate_dt"] * Lz
+    hst_cum["Snet"] = hw["netcool_dt"] * Lz
+
+    hst_cum["Wrad"] = hw["Wrad_dt"] * Lz
+
+    hst_cum["Esink"] = hw["sink_E_dt"] * dvol / vol
     for k in hst_cum:
-        hcum = hst_cum[k]#.cumsum(dim="time")
+        hcum = hst_cum[k]  # .cumsum(dim="time")
         hcum_i = np.interp(tarr, hw["time"], hcum)
         hdict[k] = np.diff(hcum_i) / dt * s.u.Lsun
+
+    hdict["dE"] = np.diff(np.interp(tarr, h["time"], h["totalE"]) * Lz) / dt * s.u.Lsun
 
     # save data into dataset
     dset = xr.Dataset()
