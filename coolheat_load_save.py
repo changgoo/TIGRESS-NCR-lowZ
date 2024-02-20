@@ -92,6 +92,7 @@ def load_hst(pdata, m):
     flist = [
         "time",
         "tMyr",
+        "totalE",
         "Srad",
         "SLyC",
         "SPE",
