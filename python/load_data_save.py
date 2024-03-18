@@ -1,3 +1,6 @@
+#!/bin/python
+# PYTHONPATH="/home/changgoo/pyathena/PRFM:$PYTHONPATH" python load_data_save.py
+
 import sys
 import os
 import xarray as xr
