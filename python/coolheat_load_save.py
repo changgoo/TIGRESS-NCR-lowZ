@@ -166,7 +166,7 @@ def load_hst(pdata, m):
 
 
 def load_save_hst():
-    tmp_outdir = "./lowZ-hst-data"
+    tmp_outdir = "../data/lowZ-hst-data"
     os.makedirs(tmp_outdir, exist_ok=True)
     pdata = LowZData()
 
@@ -177,7 +177,7 @@ def load_save_hst():
 
 
 def load_save_zprof():
-    tmp_outdir = "./lowZ-zprof-data"
+    tmp_outdir = "../data/lowZ-zprof-data"
     os.makedirs(tmp_outdir, exist_ok=True)
 
     flist = ["A", "d", "Ek1", "Ek2", "Ek3", "dEk2", "cool", "heat", "net_cool", "P"]
@@ -201,7 +201,7 @@ def copy_files(m):
     savdir = os.path.join(basedir, m)
 
     indir = os.path.join(savdir, "hst2")
-    outdir = "./lowZ-coolheat-data"
+    outdir = "../data/lowZ-coolheat-data"
     os.makedirs(outdir, exist_ok=True)
     for f in ["PEheating.nc", "phase_vmeans.nc", "phase_nmeans.nc"]:
         infile = os.path.join(indir, f)

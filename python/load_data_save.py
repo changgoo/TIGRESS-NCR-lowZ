@@ -48,14 +48,14 @@ def load_data_and_save():
 
     # all points
     pt_df = pd.concat(allpoints, ignore_index=True)
-    outfile = "points_all.p"
+    outfile = "../data/points_all.p"
     if os.path.isfile(outfile):
         os.remove(outfile)
     pt_df.to_pickle(outfile)
 
     # percentile
     qdset = xr.concat(alldata, dim="name")
-    outfile = "percentiles_all.nc"
+    outfile = "../data/percentiles_all.nc"
     if os.path.isfile(outfile):
         os.remove(outfile)
     qdset.to_netcdf(outfile)
