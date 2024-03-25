@@ -525,6 +525,8 @@ def set_labels():
     labels["sfr10"] = labels["sfr40"] = labels["sfr100"] = labels["sfr"]
     labels["tdep40"] = r"$t_{\rm dep}\,[{\rm Myr}]$"
     labels["tdep"] = r"$t_{\rm dep}\,[{\rm Myr}]$"
+    labels["tdyn"] = r"$t_{\rm dyn}\,[{\rm Myr}]$"
+    labels["edyn"] = r"$\epsilon_{\rm dyn}$"
     labels["nH"] = r"$n_{\rm H,mid}\,[{\rm cm^{-3}}]$"
     labels["rhotot"] = r"$\rho_{\rm tot}\,[{M_\odot\,{\rm pc^{-3}}}]$"
     labels["sigma_eff"] = r"$\sigma_{\rm z,eff}$" + v_unit_label
