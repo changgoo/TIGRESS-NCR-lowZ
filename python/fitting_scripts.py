@@ -488,7 +488,8 @@ def set_labels():
     v_unit_label = r"$\,[{\rm km/s}]$"
 
     Plabels = {
-        "Ptot": r"${P}_{\rm tot}$",
+        "Ptot": r"${P}_{\rm tot,2p}$",
+        "Ptot_all": r"${P}_{\rm tot}$",
         "Pth": r"${P}_{\rm th}$",
         "Pturb": r"${P}_{\rm turb}$",
         "Pimag": r"${\Pi}_{\rm mag}$",
@@ -527,7 +528,8 @@ def set_labels():
     labels["tdep"] = r"$t_{\rm dep}\,[{\rm Myr}]$"
     labels["tdyn"] = r"$t_{\rm dyn}\,[{\rm Myr}]$"
     labels["edyn"] = r"$\epsilon_{\rm dyn}$"
-    labels["nH"] = r"$n_{\rm H,mid}\,[{\rm cm^{-3}}]$"
+    labels["nH"] = r"$n_{\rm mid,2p}\,[{\rm cm^{-3}}]$"
+    labels["nH_all"] = r"$n_{\rm mid}\,[{\rm cm^{-3}}]$"
     labels["rhotot"] = r"$\rho_{\rm tot}\,[{M_\odot\,{\rm pc^{-3}}}]$"
     labels["sigma_eff"] = r"$\sigma_{\rm z,eff}$" + v_unit_label
     labels["sigma_eff_mid"] = r"$\sigma_{\rm z,eff,mid}$" + v_unit_label
